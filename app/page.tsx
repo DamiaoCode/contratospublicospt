@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import Topbar from '@/components/Topbar'
+import ContestCard from '@/components/ContestCard'
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [isGuest, setIsGuest] = useState(false)
   const [userName, setUserName] = useState('')
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [districts, setDistricts] = useState<string[]>([])
@@ -38,9 +38,12 @@ export default function Home() {
   const [activeFavoritedCount, setActiveFavoritedCount] = useState(0)
   const [showSessionModal, setShowSessionModal] = useState(false)
   const [sessionModalType, setSessionModalType] = useState<'favoritos' | 'dashboard'>('favoritos')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
 
   // Buscar distritos únicos da tabela de municípios
-  const fetchDistricts = async () => {
+  const fetchDistricts = async () => { 
     try {
       const { data, error } = await supabase
         .from('Municipios')
@@ -766,91 +769,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Concurso Público
-              </h1>
-            </div>
-            
-            {/* Navegação centralizada */}
-            <div className="flex items-center space-x-6">
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-4 py-2 rounded-md text-sm font-medium bg-blue-50 rounded-md transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Procedimentos
-              </Link>
-              {isLoggedIn ? (
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  Dashboard
-                </Link>
-              ) : (
-                <button
-                  onClick={() => {
-                    setSessionModalType('dashboard')
-                    setShowSessionModal(true)
-                  }}
-                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  Dashboard
-                </button>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              {isGuest ? (
-                <div className="flex items-center space-x-3">
-                  <Link
-                    href="/login"
-                    className="text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Entrar
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="text-primary-600 hover:text-primary-700 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Criar Conta
-                  </Link>
-                </div>
-              ) : isLoggedIn ? (
-                <>
-                  <Link
-                    href="/favoritos"
-                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    Favoritos ({activeFavoritedCount})
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    Sair
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Topbar 
+        activeFavoritedCount={activeFavoritedCount}
+        onSessionModalOpen={(type) => {
+          setSessionModalType(type)
+          setShowSessionModal(true)
+        }}
+      />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
@@ -1111,181 +1036,15 @@ export default function Home() {
             ) : (
               <div className="space-y-4">
                 {filteredConcursos.map((concurso) => (
-                  <div key={concurso.id} className={`border rounded-lg p-4 hover:shadow-md transition-all duration-200 relative ${
-                    expandedConcursos.has(concurso.id) 
-                      ? 'border-green-400 shadow-lg shadow-green-100 bg-green-50/30' 
-                      : 'border-gray-200'
-                  }`}>
-                    {/* Ícone de estrela no canto superior direito */}
-                    <button
-                      onClick={() => toggleFavorite(concurso.id)}
-                      className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
-                      title={favoritedConcursos.has(concurso.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                    >
-                      <svg 
-                        className={`w-5 h-5 transition-colors ${
-                          favoritedConcursos.has(concurso.id) 
-                            ? 'text-yellow-500 fill-current' 
-                            : 'text-gray-400 hover:text-yellow-500'
-                        }`} 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" 
-                        />
-                      </svg>
-                    </button>
-
-                    <div className="flex justify-between items-start mb-2 pr-8">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                            {concurso.n_procedimento}
-                          </span>
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            {concurso.titulo && concurso.titulo.length > 70 
-                              ? `${concurso.titulo.substring(0, 70)}...` 
-                              : concurso.titulo
-                            }
-                          </h4>
-                        </div>
-                      </div>
-                      {concurso.urgente && (
-                        <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                          Urgente
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                      <div>
-                        <span className="font-medium">Entidade:</span> {concurso.entidade}
-                      </div>
-                      <div>
-                        <span className="font-medium">Data de Publicação:</span> {new Date(concurso.data_envio).toLocaleDateString('pt-PT')}
-                      </div>
-                      <div>
-                        <span className="font-medium">Prazo de Propostas:</span> {concurso.prazo_propostas ? new Date(concurso.prazo_propostas).toLocaleDateString('pt-PT') : 'Não especificado'}
-                      </div>
-                      <div>
-                        <span className="font-medium">Preço Base:</span> {concurso.preco_base ? `€${concurso.preco_base}` : 'Não especificado'}
-                        {concurso.prazo_execucao && (
-                          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {concurso.prazo_execucao}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Tempo restante até o prazo */}
-                    {concurso.prazo_propostas && (
-                      <div className="mt-3">
-                        {(() => {
-                          const timeRemaining = calculateTimeRemaining(concurso.prazo_propostas)
-                          return timeRemaining ? (
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${timeRemaining.color}`}>
-                              {timeRemaining.text}
-                            </span>
-                          ) : null
-                        })()}
-                      </div>
-                    )}
-                    
-                    {/* Botão Mais detalhes */}
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-end">
-                      <button
-                        onClick={() => toggleExpansion(concurso.id)}
-                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                      >
-                        <span>{expandedConcursos.has(concurso.id) ? 'Menos detalhes' : 'Mais detalhes'}</span>
-                        <svg 
-                          className={`w-4 h-4 transition-transform ${expandedConcursos.has(concurso.id) ? 'rotate-180' : ''}`} 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Seção expandida com todos os detalhes */}
-                    {expandedConcursos.has(concurso.id) && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <h5 className="text-sm font-semibold text-gray-900 mb-3">Detalhes Completos</h5>
-                        <div className="space-y-3 text-sm">
-                          {/* Informações básicas */}
-                          <div>
-                            <span className="font-medium text-gray-600">Título:</span> {concurso.titulo}
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Entidade:</span> {concurso.entidade}
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Distrito:</span> {concurso.distrito || 'Não especificado'}
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-600">Concelho:</span> {concurso.concelho || 'Não especificado'}
-                          </div>
-                          
-                          {/* Separador */}
-                          <div className="border-t border-gray-300 my-3"></div>
-                          
-                          {/* Critério de Adjudicação */}
-                          <div>
-                            <span className="font-medium text-gray-600">Critério de Adjudicação:</span>
-                            <div className="mt-1 pl-4">
-                              {concurso.monofator ? (
-                                <div className="text-gray-700">{concurso.monofator}</div>
-                              ) : concurso.multifator ? (
-                                <div className="text-gray-700 whitespace-pre-line">{concurso.multifator.replace(/\|/g, '\n')}</div>
-                              ) : (
-                                <div className="text-gray-500 italic">Não especificado</div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Separador */}
-                          <div className="border-t border-gray-300 my-3"></div>
-                          
-                          {/* Plataforma */}
-                          {concurso.url_apresentacao && (
-                            <div>
-                              <span className="font-medium text-gray-600">Plataforma:</span>{' '}
-                              <a 
-                                href={concurso.url_apresentacao} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline"
-                              >
-                                {concurso.plataforma || concurso.url_apresentacao}
-                              </a>
-                            </div>
-                          )}
-                          
-                          {/* Fonte PDF */}
-                          {concurso.fonte_pdf && (
-                            <div>
-                              <span className="font-medium text-gray-600">Fonte PDF:</span>{' '}
-                              <a 
-                                href={concurso.fonte_pdf} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline"
-                              >
-                                DRE
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <ContestCard
+                    key={concurso.id}
+                    concurso={concurso}
+                    isFavorited={favoritedConcursos.has(concurso.id)}
+                    isExpanded={expandedConcursos.has(concurso.id)}
+                    onToggleFavorite={toggleFavorite}
+                    onToggleExpansion={toggleExpansion}
+                    calculateTimeRemaining={calculateTimeRemaining}
+                  />
                 ))}
               </div>
             )}
