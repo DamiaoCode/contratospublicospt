@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 interface TopbarProps {
@@ -13,6 +14,7 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isGuest, setIsGuest] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     // Verificar estado de autenticação
@@ -47,14 +49,6 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
     }
   }
 
-  const handleFavoritesClick = () => {
-    if (isLoggedIn) {
-      setIsMobileMenuOpen(false)
-    } else {
-      onSessionModalOpen?.('favoritos')
-      setIsMobileMenuOpen(false)
-    }
-  }
 
   return (
     <nav className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200">
@@ -71,7 +65,11 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
           <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-4 py-2 rounded-md text-sm font-medium bg-blue-50 transition-colors"
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                pathname === '/'
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -81,12 +79,16 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === '/dashboard'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                Dashboard
+                Dashboard ({activeFavoritedCount})
               </Link>
             ) : (
               <button
@@ -103,6 +105,19 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
           
           {/* Desktop Auth Actions */}
           <div className="hidden md:flex items-center space-x-3">
+            <Link
+              href="/como-utilizar"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                pathname === '/como-utilizar'
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Como Utilizar
+            </Link>
             {isGuest ? (
               <div className="flex items-center space-x-3">
                 <Link
@@ -120,15 +135,6 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link
-                  href="/favoritos"
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  Favoritos ({activeFavoritedCount})
-                </Link>
                 <button
                   onClick={handleLogout}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
@@ -180,7 +186,11 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
           {/* Mobile Navigation Links */}
           <Link
             href="/"
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-50 transition-colors"
+            className={`flex items-center gap-2 block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+              pathname === '/'
+                ? 'text-blue-600 bg-blue-50'
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,13 +202,17 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors"
+              className={`flex items-center gap-2 block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                pathname === '/dashboard'
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              Dashboard
+              Dashboard ({activeFavoritedCount})
             </Link>
           ) : (
             <button
@@ -213,46 +227,49 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
           )}
 
           {/* Mobile Auth Actions */}
-          {isGuest ? (
-            <div className="pt-4 pb-3 border-t border-gray-200">
-              <div className="space-y-1">
-                <Link
-                  href="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-primary-600 hover:bg-primary-700 text-white transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Criar Conta
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="pt-4 pb-3 border-t border-gray-200">
-              <div className="space-y-1">
-                <button
-                  onClick={handleFavoritesClick}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-blue-50 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  Favoritos ({activeFavoritedCount})
-                </button>
+          <div className="pt-4 pb-3 border-t border-gray-200">
+            <div className="space-y-1">
+              <Link
+                href="/como-utilizar"
+                className={`flex items-center gap-2 block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  pathname === '/como-utilizar'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Como Utilizar
+              </Link>
+              {isGuest ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="block px-3 py-2 rounded-md text-base font-medium bg-primary-600 hover:bg-primary-700 text-white transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Criar Conta
+                  </Link>
+                </>
+              ) : (
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-red-600 hover:bg-red-700 text-white transition-colors"
                 >
                   Sair
                 </button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </nav>

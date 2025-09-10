@@ -41,6 +41,48 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isGuest, setIsGuest] = useState(false)
+  const [sortBy, setSortBy] = useState('prazo_propostas_asc')
+
+  // Opções de ordenação
+  const sortOptions = [
+    { value: 'prazo_propostas_asc', label: 'Prazo de Entrega de Propostas (Ascendente)' },
+    { value: 'prazo_propostas_desc', label: 'Prazo de Entrega de Propostas (Descendente)' },
+    { value: 'data_envio_asc', label: 'Data de Publicação (Ascendente)' },
+    { value: 'data_envio_desc', label: 'Data de Publicação (Descendente)' },
+    { value: 'n_procedimento_asc', label: 'Nº Publicação (Ascendente)' },
+    { value: 'n_procedimento_desc', label: 'Nº Publicação (Descendente)' }
+  ]
+
+  // Função para aplicar ordenação
+  const applySorting = (concursos: any[]) => {
+    const lastUnderscoreIndex = sortBy.lastIndexOf('_')
+    const field = sortBy.substring(0, lastUnderscoreIndex)
+    const direction = sortBy.substring(lastUnderscoreIndex + 1)
+    const isAscending = direction === 'asc'
+    
+    return [...concursos].sort((a, b) => {
+      let valueA, valueB
+      
+      if (field === 'prazo_propostas') {
+        valueA = new Date(a.prazo_propostas).getTime()
+        valueB = new Date(b.prazo_propostas).getTime()
+      } else if (field === 'data_envio') {
+        valueA = new Date(a.data_envio).getTime()
+        valueB = new Date(b.data_envio).getTime()
+      } else if (field === 'n_procedimento') {
+        valueA = parseInt(a.n_procedimento) || 0
+        valueB = parseInt(b.n_procedimento) || 0
+      } else {
+        return 0
+      }
+      
+      if (isAscending) {
+        return valueA - valueB
+      } else {
+        return valueB - valueA
+      }
+    })
+  }
 
   // Buscar distritos únicos da tabela de municípios
   const fetchDistricts = async () => { 
@@ -260,12 +302,8 @@ export default function Home() {
       })
     }
 
-    // Ordenar por prazo_propostas em ordem ascendente (mais próximos de expirar primeiro)
-    return finalFiltered.sort((a, b) => {
-      const prazoA = new Date(a.prazo_propostas).getTime()
-      const prazoB = new Date(b.prazo_propostas).getTime()
-      return prazoA - prazoB
-    })
+    // Aplicar ordenação selecionada
+    return applySorting(finalFiltered)
   }
 
   // Verificar estado de autenticação do Supabase
@@ -342,11 +380,13 @@ export default function Home() {
     fetchConcursos()
   }, [])
 
-  // Aplicar filtros quando os filtros selecionados ou aba mudarem
+  // Aplicar filtros quando os filtros selecionados, aba ou ordenação mudarem
   useEffect(() => {
-    const filtered = applyFilters(concursos)
-    setFilteredConcursos(filtered)
-  }, [selectedFilters, concursos, activeTab])
+    if (concursos.length > 0) {
+      const filtered = applyFilters(concursos)
+      setFilteredConcursos(filtered)
+    }
+  }, [selectedFilters, concursos, activeTab, sortBy])
 
   // Atualizar contador de favoritos ativos
   useEffect(() => {
@@ -987,13 +1027,33 @@ export default function Home() {
 
           {/* Lista de Concursos */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
               <h3 className="text-lg font-medium text-gray-900">
                 Concursos Públicos
               </h3>
               
-              {/* Tabs */}
-              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Dropdown de Ordenação */}
+                <div className="flex items-center gap-2">
+                  <label htmlFor="sort-select" className="text-sm font-medium text-gray-700">
+                    Ordenar por:
+                  </label>
+                  <select
+                    id="sort-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Tabs */}
+                <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
                 <button
                   onClick={() => setActiveTab('ativos')}
                   className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
@@ -1021,6 +1081,7 @@ export default function Home() {
                 >
                   Expirados
                 </button>
+                </div>
               </div>
             </div>
             
