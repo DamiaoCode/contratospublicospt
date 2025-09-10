@@ -18,12 +18,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/seu-usuario/concurso-publico.git"
+    "url": "https://github.com/DamiaoCode/concursospublicospt.git"
   },
   "bugs": {
-    "url": "https://github.com/seu-usuario/concurso-publico/issues"
+    "url": "https://github.com/DamiaoCode/concursospublicospt/issues"
   },
-  "homepage": "https://github.com/seu-usuario/concurso-publico#readme",
+  "homepage": "https://github.com/DamiaoCode/concursospublicospt#readme",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
