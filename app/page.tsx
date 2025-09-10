@@ -726,7 +726,7 @@ export default function Home() {
               Concurso Público
             </h1>
             <p className="text-gray-600 mb-8">
-              Sistema de gerenciamento de concursos públicos
+              Sistema de gestão de concursos públicos
             </p>
           </div>
           
