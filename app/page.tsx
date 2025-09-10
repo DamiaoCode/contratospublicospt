@@ -217,49 +217,54 @@ export default function Home() {
       }
     })
 
-    // Se não há filtros personalizados selecionados, retornar apenas a filtragem por aba
-    if (selectedFilters.length === 0) {
-      return filteredByTab
+    // Aplicar filtros personalizados se houver
+    let finalFiltered = filteredByTab
+    if (selectedFilters.length > 0) {
+      const activeFilters = userFilters.filter(filter => selectedFilters.includes(filter.id))
+      
+      finalFiltered = filteredByTab.filter(concurso => {
+        return activeFilters.some(filter => {
+          // Verificar distrito
+          if (filter.distrito && concurso.distrito !== filter.distrito) {
+            return false
+          }
+
+          // Verificar concelhos (se o filtro tem concelhos específicos)
+          if (filter.municipios && filter.municipios.length > 0) {
+            if (!filter.municipios.includes(concurso.concelho)) {
+              return false
+            }
+          }
+
+          // Verificar palavras-chave (se o filtro tem palavras-chave)
+          if (filter.keywords && filter.keywords.length > 0) {
+            const concursoText = [
+              concurso.titulo,
+              concurso.entidade,
+              concurso.descricao || '',
+              concurso.objeto || '',
+              concurso.criterios || ''
+            ].join(' ').toLowerCase()
+
+            const hasKeyword = filter.keywords.some((keyword: string) => 
+              concursoText.includes(keyword.toLowerCase())
+            )
+
+            if (!hasKeyword) {
+              return false
+            }
+          }
+
+          return true
+        })
+      })
     }
 
-    // Buscar os filtros selecionados
-    const activeFilters = userFilters.filter(filter => selectedFilters.includes(filter.id))
-    
-    return filteredByTab.filter(concurso => {
-      return activeFilters.some(filter => {
-        // Verificar distrito
-        if (filter.distrito && concurso.distrito !== filter.distrito) {
-          return false
-        }
-
-        // Verificar concelhos (se o filtro tem concelhos específicos)
-        if (filter.municipios && filter.municipios.length > 0) {
-          if (!filter.municipios.includes(concurso.concelho)) {
-            return false
-          }
-        }
-
-        // Verificar palavras-chave (se o filtro tem palavras-chave)
-        if (filter.keywords && filter.keywords.length > 0) {
-          const concursoText = [
-            concurso.titulo,
-            concurso.entidade,
-            concurso.descricao || '',
-            concurso.objeto || '',
-            concurso.criterios || ''
-          ].join(' ').toLowerCase()
-
-          const hasKeyword = filter.keywords.some((keyword: string) => 
-            concursoText.includes(keyword.toLowerCase())
-          )
-
-          if (!hasKeyword) {
-            return false
-          }
-        }
-
-        return true
-      })
+    // Ordenar por prazo_propostas em ordem ascendente (mais próximos de expirar primeiro)
+    return finalFiltered.sort((a, b) => {
+      const prazoA = new Date(a.prazo_propostas).getTime()
+      const prazoB = new Date(b.prazo_propostas).getTime()
+      return prazoA - prazoB
     })
   }
 

@@ -49,7 +49,7 @@ export default function EntidadePage() {
         .from('Concursos')
         .select('*')
         .eq('nipc', nipc)
-        .order('data_envio', { ascending: false })
+        .order('prazo_propostas', { ascending: true })
 
       if (error) {
         console.error('Erro ao buscar concursos da entidade:', error)
@@ -209,7 +209,7 @@ export default function EntidadePage() {
     const hoje = new Date()
     hoje.setHours(0, 0, 0, 0)
 
-    return concursos.filter(concurso => {
+    const filtered = concursos.filter(concurso => {
       if (!concurso.prazo_propostas) return false
       
       const prazoDate = new Date(concurso.prazo_propostas)
@@ -220,6 +220,13 @@ export default function EntidadePage() {
       } else {
         return prazoDate < hoje
       }
+    })
+
+    // Ordenar por prazo_propostas em ordem ascendente (mais próximos de expirar primeiro)
+    return filtered.sort((a, b) => {
+      const prazoA = new Date(a.prazo_propostas).getTime()
+      const prazoB = new Date(b.prazo_propostas).getTime()
+      return prazoA - prazoB
     })
   }
 
