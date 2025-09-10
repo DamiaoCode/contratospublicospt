@@ -36,6 +36,8 @@ export default function Home() {
   const [expandedConcursos, setExpandedConcursos] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<'ativos' | 'expirados'>('ativos')
   const [activeFavoritedCount, setActiveFavoritedCount] = useState(0)
+  const [showSessionModal, setShowSessionModal] = useState(false)
+  const [sessionModalType, setSessionModalType] = useState<'favoritos' | 'dashboard'>('favoritos')
 
   // Buscar distritos únicos da tabela de municípios
   const fetchDistricts = async () => {
@@ -623,7 +625,8 @@ export default function Home() {
       
       if (!user) {
         console.error('Usuário não autenticado')
-        alert('Você precisa estar logado para favoritar concursos.')
+        setSessionModalType('favoritos')
+        setShowSessionModal(true)
         return
       }
 
@@ -783,15 +786,30 @@ export default function Home() {
                 </svg>
                 Procedimentos
               </Link>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Dashboard
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Dashboard
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    setSessionModalType('dashboard')
+                    setShowSessionModal(true)
+                  }}
+                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Dashboard
+                </button>
+              )}
             </div>
             
             <div className="flex items-center space-x-3">
@@ -1491,6 +1509,57 @@ export default function Home() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Sessão Necessária */}
+      {showSessionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              
+              <h3 className="text-lg font-medium text-gray-900 text-center mb-2">
+                Sessão Necessária
+              </h3>
+              
+              <p className="text-sm text-gray-600 text-center mb-6">
+                {sessionModalType === 'favoritos' 
+                  ? 'Está a navegar como convidado. Crie uma conta para ter acesso aos favoritos.'
+                  : 'Está a navegar como convidado. Crie uma conta para ter acesso ao dashboard.'
+                }
+              </p>
+              
+              <div className="space-y-3">
+                <Link
+                  href="/login"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition duration-150 ease-in-out"
+                >
+                  Fazer Login
+                </Link>
+                
+                <Link
+                  href="/signup"
+                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition duration-150 ease-in-out"
+                >
+                  Criar Conta
+                </Link>
+              </div>
+              
+              <div className="text-center mt-4">
+                <button
+                  onClick={() => setShowSessionModal(false)}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>
