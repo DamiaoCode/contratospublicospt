@@ -150,7 +150,10 @@ export default function ContestCard({
           <div className="space-y-3 text-sm">
             {/* Informações básicas */}
             <div>
-              <span className="font-medium text-gray-600">Título:</span> {concurso.titulo}
+              <span className="font-medium text-gray-600">Título:</span>{' '}
+              {concurso.titulo && concurso.titulo.length >= 60
+                ? `${concurso.titulo.slice(0, 57)}(...)`
+                : concurso.titulo}
             </div>
             <div>
               <span className="font-medium text-gray-600">Entidade:</span> {concurso.entidade}

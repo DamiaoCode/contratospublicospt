@@ -5,11 +5,23 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import Topbar from '@/components/Topbar'
 import ContestCard from '@/components/ContestCard'
+import Notification from '@/app/components/Notification'
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false)
   const [userName, setUserName] = useState('')
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [filterToDelete, setFilterToDelete] = useState<any>(null)
+  const [notification, setNotification] = useState<{
+    message: string
+    type: 'success' | 'error' | 'info'
+    isVisible: boolean
+  }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  })
   const [districts, setDistricts] = useState<string[]>([])
   const [municipalities, setMunicipalities] = useState<string[]>([])
   const [allMunicipalities, setAllMunicipalities] = useState<string[]>([])
@@ -26,7 +38,6 @@ export default function Home() {
   const [userFilters, setUserFilters] = useState<any[]>([])
   const [selectedFilters, setSelectedFilters] = useState<string[]>([])
   const [hoveredFilter, setHoveredFilter] = useState<string | null>(null)
-  const [showFilterMenu, setShowFilterMenu] = useState<string | null>(null)
   const [editingFilter, setEditingFilter] = useState<any>(null)
   const [concursos, setConcursos] = useState<any[]>([])
   const [filteredConcursos, setFilteredConcursos] = useState<any[]>([])
@@ -356,24 +367,7 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Fechar menu de filtros quando clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      // Verificar se o clique foi fora do menu
-      if (showFilterMenu && !target.closest('.filter-menu-container')) {
-        setShowFilterMenu(null)
-      }
-    }
 
-    if (showFilterMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showFilterMenu])
 
   // Carregar concursos quando o componente monta
   useEffect(() => {
@@ -481,7 +475,12 @@ export default function Home() {
       }
 
       console.log('Filtro salvo com sucesso:', data)
-      alert(editingFilter ? 'Filtro atualizado com sucesso!' : 'Filtro criado com sucesso!')
+      showNotification(
+        editingFilter 
+          ? `O filtro "${filterForm.title}" foi atualizado com sucesso!` 
+          : `O filtro "${filterForm.title}" foi criado com sucesso!`,
+        'success'
+      )
       
       // Recarregar lista de filtros se estiver visível
       if (showFilters) {
@@ -578,17 +577,21 @@ export default function Home() {
     localStorage.removeItem('isGuest')
   }
 
-  // Função para eliminar filtro
-  const handleDeleteFilter = async (filterId: string) => {
-    if (!confirm('Tem certeza que deseja eliminar este filtro?')) {
-      return
-    }
+  // Função para abrir modal de eliminação
+  const handleDeleteFilter = (filter: any) => {
+    setFilterToDelete(filter)
+    setShowDeleteModal(true)
+  }
+
+  // Função para confirmar eliminação
+  const confirmDeleteFilter = async () => {
+    if (!filterToDelete) return
 
     try {
       const { error } = await supabase
         .from('Concurso_Filtros')
         .delete()
-        .eq('id', filterId)
+        .eq('id', filterToDelete.id)
 
       if (error) {
         console.error('Erro ao eliminar filtro:', error)
@@ -597,13 +600,36 @@ export default function Home() {
       }
 
       // Atualizar lista de filtros
-      setUserFilters(prev => prev.filter(filter => filter.id !== filterId))
-      setSelectedFilters(prev => prev.filter(id => id !== filterId))
-      alert('Filtro eliminado com sucesso!')
+      setUserFilters(prev => prev.filter(filter => filter.id !== filterToDelete.id))
+      setSelectedFilters(prev => prev.filter(id => id !== filterToDelete.id))
+      
+      // Fechar modal
+      setShowDeleteModal(false)
+      setFilterToDelete(null)
     } catch (err) {
       console.error('Erro inesperado ao eliminar filtro:', err)
       alert('Erro inesperado. Tente novamente.')
     }
+  }
+
+  // Função para cancelar eliminação
+  const cancelDeleteFilter = () => {
+    setShowDeleteModal(false)
+    setFilterToDelete(null)
+  }
+
+  // Função para mostrar notificação
+  const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setNotification({
+      message,
+      type,
+      isVisible: true
+    })
+  }
+
+  // Função para fechar notificação
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, isVisible: false }))
   }
 
   // Função para editar filtro
@@ -929,55 +955,37 @@ export default function Home() {
                           </div>
                         </div>
                           
-                          {/* Menu de 3 pontos */}
-                          <div className="relative filter-menu-container">
+                          {/* Ícones de ação */}
+                          <div className="flex items-center space-x-1">
+                            {/* Ícone de Editar */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setShowFilterMenu(showFilterMenu === filter.id ? null : filter.id)
+                                handleEditFilter(filter)
                               }}
-                              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                              className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                              title="Editar filtro"
                             >
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button>
-                      </div>
-                        </div>
-                        
-                        {/* Menu dropdown - fora do container principal */}
-                        {showFilterMenu === filter.id && (
-                          <div className="absolute right-3 top-3 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                            <div className="py-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleEditFilter(filter)
-                                  setShowFilterMenu(null)
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Editar Filtro
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDeleteFilter(filter.id)
-                                  setShowFilterMenu(null)
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                              >
-                                <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Eliminar Filtro
-                              </button>
-                            </div>
+                            
+                            {/* Ícone de Eliminar */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteFilter(filter)
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                              title="Eliminar filtro"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
                           </div>
-                        )}
+                        </div>
                         
                         {/* Tooltip com detalhes */}
                         {hoveredFilter === filter.id && (
@@ -1154,7 +1162,7 @@ export default function Home() {
 
       {/* Modal de Criar Filtro */}
       {showFilterModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[9999]">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
@@ -1389,6 +1397,55 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação de Eliminação */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-10 h-10 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Eliminar Filtro
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Tem certeza que deseja eliminar o filtro <strong>"{filterToDelete?.nome}"</strong>? 
+                Esta ação não pode ser desfeita.
+              </p>
+              
+              <div className="flex space-x-3 justify-center">
+                <button
+                  onClick={cancelDeleteFilter}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDeleteFilter}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notificação */}
+      <Notification
+        message={notification.message}
+        type={notification.type}
+        isVisible={notification.isVisible}
+        onClose={closeNotification}
+        duration={4000}
+      />
     </div>
   )
 }

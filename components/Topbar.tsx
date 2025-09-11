@@ -56,8 +56,13 @@ export default function Topbar({ activeFavoritedCount = 0, onSessionModalOpen }:
         <div className="flex justify-between items-center h-16">
           {/* Logo/Título */}
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors">
-              Concurso Público
+            <Link href="/" className="flex items-center space-x-2 text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+              <img 
+                src="/favicon-32x32.png" 
+                alt="Concurso Público" 
+                className="w-8 h-8"
+              />
+              <span>Concurso Público</span>
             </Link>
           </div>
           
